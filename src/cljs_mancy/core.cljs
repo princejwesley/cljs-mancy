@@ -39,15 +39,19 @@
 
 (defn- callback!
   "Handle callback. Update ns"
-  [cb]
+  [cb expr]
   (fn [{:keys [error value ns]}]
-    (if error (cb (clj->js error) nil) (do (swap! copts assoc :ns ns) (clj->js value)) )))
+    (if error (cb (clj->js error) nil) (do
+      (swap! copts assoc :ns ns)
+      (cb nil (clj->js { :value value
+                 :special (if (repl-special? expr) (first expr) nil)
+               }))))))
 
 (defn compile
   [source cb]
   (try
     (let [expr (read-string {:read-cond :allow :features #{:cljs}} source)
-          on-return (callback! cb)]
+          on-return (callback! cb expr)]
       (if (repl-special? expr)
         (process-repl-special @copts on-return {:form expr :ns (:ns @copts) :target "nodejs"} expr)
         (jsc/eval-str*
