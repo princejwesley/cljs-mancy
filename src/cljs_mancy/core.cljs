@@ -8,6 +8,8 @@
             [replumb.repl :refer [make-load-fn, make-js-eval-fn, repl-special?, read-string, process-repl-special]]
             [replumb.cache :as cache]
             [cljs-mancy.io :as io]
+            [cljs-mancy.hint :as hint :refer [process-apropos]]
+            [clojure.string :as s]
             [cljs.tagged-literals :as tags]
             [cljs.js :as jsc]))
 
@@ -69,6 +71,9 @@
 (def clj2js clj->js)
 
 (def js2clj js->clj)
+
+(defn complete [text] (clj2js (process-apropos text @copts cenv)))
+
 
 (set! make-js-eval-fn fake-eval-fn!)
 
