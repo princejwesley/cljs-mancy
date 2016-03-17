@@ -5,10 +5,19 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.8.32"]
+                 [org.clojure/tools.reader "1.0.0-alpha3"]
                  [replumb "0.1.5-3"]]
-  :source-paths ["src/cljs-mancy"]  
-  :main ^:skip-aot cljs-mancy.core
-  :target-path "target/%s"
+  :source-paths ["src"]  
+  :target-path "out/%s"
   :min-lein-version "2.5.3"
-  :plugins []  
-  :profiles {:uberjar {:aot :all}})
+  :plugins [[lein-cljsbuild "1.1.2"]]
+  :cljsbuild {:builds [{:id "mancy-repl"
+                        :source-paths ["src"]
+                        :compiler {:target :nodejs
+                                   :optimizations :simple
+                                   :output-to "out/cljs_mancy.js"
+                                   :static-fns true
+                                   :elide-asserts true
+                                   :optimize-constants true
+                                   :cache-analysis true
+                                   :parallel-build true}}]})
