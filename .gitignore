@@ -5,11 +5,11 @@ pom.xml.asc
 /classes/
 /target/
 /out/
+/dist/
 /checkouts/
 .lein-deps-sum
 .lein-repl-history
 .lein-plugins/
 .lein-failures
 .nrepl-port
-test.html
-clojurescript.js
+*.html

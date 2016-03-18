@@ -24,6 +24,8 @@
               :static-fns false
               :def-emits-var true
               :context :expr
+              :read-file-fn! io/read-file!
+              :src-paths []
               :ns 'cljs.user
             }))
 
@@ -74,6 +76,16 @@
 (def js2clj js->clj)
 
 (defn complete [text] (clj2js (process-apropos text @copts cenv)))
+
+(defn add-paths [paths]
+  (let [v? (vector? paths)
+        p (if v? paths [paths])]
+    (swap! copts assoc :src-paths (into (:src-paths @copts) p))))
+
+(defn set-paths [paths]
+  (let [v? (vector? paths)
+        p (if v? paths [paths])]
+    (swap! copts assoc :src-paths p)))
 
 
 (set! make-js-eval-fn fake-eval-fn!)
