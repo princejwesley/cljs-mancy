@@ -1,11 +1,17 @@
 (ns cljs-mancy.core
-  "REPL for mancy"
+  "REPL for mancy."
   (:require-macros [cljs.core]
                    [cljs.env.macros :refer [ensure with-compiler-env]]
                    [cljs.analyzer.macros :refer [no-warn]])
   (:require [cljs.nodejs :as nodejs]
             [replumb.core :as replumb]
-            [replumb.repl :refer [make-load-fn, make-js-eval-fn, repl-special?, read-string, process-repl-special]]
+            [replumb.ast :as ast] 
+            [replumb.repl :refer [make-load-fn
+                                  make-js-eval-fn
+                                  repl-special?
+                                  read-string
+                                  process-repl-special
+                                  process-in-ns]]
             [replumb.cache :as cache]
             [cljs-mancy.io :as io]
             [cljs-mancy.hint :as hint :refer [process-apropos]]
@@ -42,12 +48,55 @@
           (io/write-file! js-path (str (cache/compiled-by-string) "\n" source))
           (io/write-file! json-path (cache/cljs->transit-json cache)))) source)))
 
+;; Modified version of replumb.repl/base-eval-opts!
+(defn base-eval-opts
+  ([]
+   (base-eval-opts {}))
+  ([user-opts]
+   {:ns (:ns @copts)
+    :context (or (:context @copts) :expr)
+    :source-map false
+    :def-emits-var true
+    :load (or (:load user-opts) (make-load-fn @copts))
+    :eval (or (:eval user-opts) (fake-eval-fn! @copts))
+    :verbose false
+    :static-fns false}))
+
+(defn eval! [s] 
+  (js/eval (clj->js (:source s))))
+
+;; Modified version of replumb.repl/process-in-ns
+(defn process-in-ns!
+  [_ cb data ns-string]
+  (jsc/eval
+    cenv
+    ns-string
+    (base-eval-opts {:eval eval!})
+    (fn [{:keys [error value] :as result}]
+      (if error
+        (cb {:error error})
+        (let [ns-symbol value]
+          (if-not (symbol? ns-symbol)
+            (cb {:error (ex-info "Argument to 'in-ns' must be a symbol" {:tag ::error}) } nil)
+            (if (some (partial = ns-symbol) (ast/known-namespaces cenv))
+              (cb {:error nil :value nil :ns ns-symbol})
+              (let [ns-form `(~'ns ~ns-symbol)]
+                (jsc/eval
+                  cenv
+                  ns-form
+                  (base-eval-opts {:eval eval!})
+                  (fn [{:keys [error value]}]
+                    (if error 
+                     (cb {:error error})
+                     (cb {:error nil :value value :ns ns-symbol}))))))))))))
+
+
 (defn- callback!
   "Handle callback. Update ns"
   [cb expr]
   (fn [{:keys [error value ns]}]
     (if error (cb (clj->js error) nil) (do
-      (swap! copts assoc :ns ns)
+      (when-not (nil? ns) (swap! copts assoc :ns ns))
       (cb nil (clj->js { :value value
                  :special (if (repl-special? expr) (first expr) nil)
                }))))))
@@ -64,8 +113,8 @@
               :*data-readers* tags/*cljs-data-readers*
               :*analyze-deps* (:analyze-deps @copts true)
               :*load-macros*  (:load-macros @copts true)
-              :*load-fn*      (or (:load @copts) make-load-fn)
-              :*eval-fn*      (or (:eval @copts) (fake-eval-fn! @copts))}
+              :*load-fn*      (make-load-fn @copts)
+              :*eval-fn*      (fake-eval-fn! @copts)}
              source 'mancy-repl @copts on-return)))
     (catch js/Error err
       (cb (clj->js err))
@@ -89,6 +138,8 @@
 
 
 (set! make-js-eval-fn fake-eval-fn!)
+(set! process-in-ns process-in-ns!)
+(set! replumb.repl/base-eval-opts! base-eval-opts)
 
 (set! *main-cli-fn* (fn [] nil))
 
