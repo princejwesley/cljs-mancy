@@ -23,6 +23,7 @@
               :analyze-deps true
               :static-fns false
               :def-emits-var true
+              :context :expr
               :ns 'cljs.user
             }))
 
