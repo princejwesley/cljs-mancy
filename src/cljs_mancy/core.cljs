@@ -140,6 +140,7 @@
 (set! make-js-eval-fn fake-eval-fn!)
 (set! process-in-ns process-in-ns!)
 (set! replumb.repl/base-eval-opts! base-eval-opts)
+(defn current-ns [] (:ns @copts))
 
 (set! *main-cli-fn* (fn [] nil))
 
