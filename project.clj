@@ -17,6 +17,8 @@
                                    :optimizations :simple
                                    :output-to "out/cljs_mancy.js"
                                    :static-fns true
+                                   :hashbang false
+                                   :language-out :ecmascript5
                                    :elide-asserts true
                                    :optimize-constants true
                                    :cache-analysis true
