@@ -14,7 +14,6 @@
                                   process-in-ns]]
             [replumb.cache :as cache]
             [cljs-mancy.io :as io]
-            [cljs-mancy.hint :as hint :refer [process-apropos]]
             [clojure.string :as s]
             [cljs.tagged-literals :as tags]
             [cljs.js :as jsc]))
@@ -123,8 +122,6 @@
 (def clj2js clj->js)
 
 (def js2clj js->clj)
-
-(defn complete [text] (clj2js (process-apropos text @copts cenv)))
 
 (defn add-paths [paths]
   (let [v? (vector? paths)

@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [org.clojure/clojurescript "1.8.40"]
                  [org.clojure/tools.reader "1.0.0-alpha3"]
-                 [replumb "0.1.5-3"]]
+                 [replumb "0.2.1"]]
   :source-paths ["src"]  
   :target-path "out/%s"
   :min-lein-version "2.5.3"
