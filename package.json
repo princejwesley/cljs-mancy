@@ -1,10 +1,10 @@
 {
   "name": "cljs-mancy",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ClojureScript REPL for Mancy",
   "keywords": [
     "REPL",
-    "CoffeeScript"
+    "ClojureScript"
   ],
   "author": "Prince John Wesley <princejohnwesley@gmail.com>",
   "license": "EPL",
